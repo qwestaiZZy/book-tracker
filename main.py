@@ -4,35 +4,50 @@ def load_books():
     try:
         with open('books.json', 'r', encoding='utf-8') as f:
             return json.load(f)
-    except:
-        return []
+    except: return []
 
 def save_books(books):
     with open('books.json', 'w', encoding='utf-8') as f:
         json.dump(books, f, ensure_ascii=False, indent=4)
 
-def show_books():
+def add_book():
     books = load_books()
-    for i, b in enumerate(books):
-        print(f"{i}. {b['author']} - {b['title']}")
+    author, title = input("Автор: "), input("Название: ")
+    if any(b['author'] == author and b['title'] == title for b in books):
+        print("Дубликат"); return
+    try:
+        rating = int(input("Оценка (1-5): "))
+        if not (1 <= rating <= 5): raise ValueError
+    except: print("Ошибка"); return
+    books.append({"author": author, "title": title, "rating": rating, "date": input("Дата: ")})
+    save_books(books); print("Добавлено")
+
+def show_books():
+    for i, b in enumerate(load_books()):
+        print(f"{i}. {b['author']} - {b['title']} ({b['rating']})")
+
+def show_stats():
+    books = load_books()
+    if not books: return
+    print(f"Средняя: {sum(b['rating'] for b in books)/len(books):.2f}")
+    authors = {}
+    for b in books: authors[b['author']] = authors.get(b['author'], 0) + 1
+    for a, c in authors.items(): print(f"{a}: {c} книг")
 
 def delete_book():
-    books = load_books()
-    show_books()
+    books = load_books(); show_books()
     try:
-        idx = int(input("Индекс для удаления: "))
-        books.pop(idx)
-        save_books(books)
-        print("Удалено")
-    except:
-        print("Ошибка")
+        books.pop(int(input("Индекс: ")))
+        save_books(books); print("Удалено")
+    except: print("Ошибка")
 
 def main():
+    actions = {'1': add_book, '2': show_books, '3': show_stats, '4': show_stats, '5': delete_book}
     while True:
         print("\n1. Добавить 2. Список 3. Средняя 4. Статистика 5. Удалить 6. Выход")
         c = input("> ")
-        if c == '5': delete_book()
-        elif c == '6': break
+        if c == '6': break
+        if c in actions: actions[c]()
 
 if __name__ == "__main__":
     main()
