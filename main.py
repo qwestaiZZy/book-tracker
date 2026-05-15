@@ -34,14 +34,20 @@ def show_stats():
     for b in books: authors[b['author']] = authors.get(b['author'], 0) + 1
     for a, c in authors.items(): print(f"{a}: {c} книг")
 
+def delete_book():
+    books = load_books(); show_books()
+    try:
+        books.pop(int(input("Индекс: ")))
+        save_books(books); print("Удалено")
+    except: print("Ошибка")
+
 def main():
+    actions = {'1': add_book, '2': show_books, '3': show_stats, '4': show_stats, '5': delete_book}
     while True:
         print("\n1. Добавить 2. Список 3. Средняя 4. Статистика 5. Удалить 6. Выход")
         c = input("> ")
-        if c == '1': add_book()
-        elif c == '2': show_books()
-        elif c in ('3', '4'): show_stats()
-        elif c == '6': break
+        if c == '6': break
+        if c in actions: actions[c]()
 
 if __name__ == "__main__":
     main()
