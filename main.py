@@ -4,8 +4,7 @@ def load_books():
     try:
         with open('books.json', 'r', encoding='utf-8') as f:
             return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
+    except: return []
 
 def save_books(books):
     with open('books.json', 'w', encoding='utf-8') as f:
@@ -13,32 +12,36 @@ def save_books(books):
 
 def add_book():
     books = load_books()
-    author = input("Автор: ")
-    title = input("Название: ")
-    
-    for book in books:
-        if book['author'] == author and book['title'] == title:
-            print("Ошибка: дубликат")
-            return
-
+    author, title = input("Автор: "), input("Название: ")
+    if any(b['author'] == author and b['title'] == title for b in books):
+        print("Дубликат"); return
     try:
         rating = int(input("Оценка (1-5): "))
         if not (1 <= rating <= 5): raise ValueError
-    except ValueError:
-        print("Ошибка: число от 1 до 5")
-        return
+    except: print("Ошибка"); return
+    books.append({"author": author, "title": title, "rating": rating, "date": input("Дата: ")})
+    save_books(books); print("Добавлено")
 
-    date = input("Дата: ")
-    books.append({"author": author, "title": title, "rating": rating, "date": date})
-    save_books(books)
-    print("Добавлено")
+def show_books():
+    for i, b in enumerate(load_books()):
+        print(f"{i}. {b['author']} - {b['title']} ({b['rating']})")
+
+def show_stats():
+    books = load_books()
+    if not books: return
+    print(f"Средняя: {sum(b['rating'] for b in books)/len(books):.2f}")
+    authors = {}
+    for b in books: authors[b['author']] = authors.get(b['author'], 0) + 1
+    for a, c in authors.items(): print(f"{a}: {c} книг")
 
 def main():
     while True:
-        print("\n1. Добавить\n2. Список\n3. Средняя оценка\n4. Статистика\n5. Удалить\n6. Выход")
-        choice = input("> ")
-        if choice == '1': add_book()
-        elif choice == '6': break
+        print("\n1. Добавить 2. Список 3. Средняя 4. Статистика 5. Удалить 6. Выход")
+        c = input("> ")
+        if c == '1': add_book()
+        elif c == '2': show_books()
+        elif c in ('3', '4'): show_stats()
+        elif c == '6': break
 
 if __name__ == "__main__":
     main()
